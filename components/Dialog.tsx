@@ -13,6 +13,10 @@ type DialogProps = {
   footer?: React.ReactNode;
 
   size?: "sm" | "md" | "lg";
+
+  // Control de estado externo de apertura y cierre
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export default function Dialog({
@@ -23,6 +27,8 @@ export default function Dialog({
   image,
   footer,
   size = "md",
+  open,
+  onOpenChange,
 }: DialogProps) {
   const sizes = {
     sm: "w-[350px]",
@@ -30,7 +36,8 @@ export default function Dialog({
     lg: "w-[700px]",
   };
   return (
-    <DialogPrimitive.Root>
+    // Usamos el componente raíz de Radix Dialog para controlar el estado
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
 
       <DialogPrimitive.Portal>

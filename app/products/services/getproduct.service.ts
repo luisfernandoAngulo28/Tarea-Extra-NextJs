@@ -1,10 +1,25 @@
-import { GetProductResponse } from "../interfaces/getproduct.interface";
+import { apiFetch } from "@/service/api";
+import {
+  DeleteProductResponse,
+  PostProductRequest,
+  PostProductResponse,
+} from "../interfaces/postproduct.interface";
 
-export async function getProducts(): Promise<GetProductResponse[]> {
-  const response = await fetch("https://fakestoreapi.com/products");
-  if (!response.ok) {
-    throw new Error("Error al obtener los productos");
-  }
-  const data = await response.json();
-  return data;
+export function getProducts() {
+  return apiFetch("/products");
+}
+
+export function postProduct(
+  data: PostProductRequest,
+): Promise<PostProductResponse> {
+  return apiFetch("/products", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteProduct(id: number): Promise<DeleteProductResponse> {
+  return apiFetch(`/products/${id}`, {
+    method: "DELETE",
+  });
 }

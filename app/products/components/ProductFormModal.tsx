@@ -3,23 +3,22 @@
 import Dialog from "@/components/Dialog";
 import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { PostProductRequest } from "../interfaces/postproduct.interface";
+import { usePostProduct } from "../hooks/usePostProduct";
 
 type Props = {
   trigger: React.ReactNode;
-  product?: {
-    title: string;
-    description: string;
-    price: number;
-    category: string;
-    image: string;
-    rating: {
-      rate: number;
-      count: number;
-    };
-  };
+  product?: PostProductRequest;
+  onSuccess?: () => void; //para refrescar la lista de productos después de crear o editar
 };
 
-export default function ProductFormModal({ trigger, product }: Props) {
+export default function ProductFormModal({
+  trigger,
+  product,
+  onSuccess,
+}: Props) {
+  const { createProduct, loading, error } = usePostProduct();
+  const [isOpen, setIsOpen] = useState(false); // Control local del estado del modal
   const [title, setTitle] = useState(product?.title ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(product?.price ?? 0);
@@ -28,8 +27,8 @@ export default function ProductFormModal({ trigger, product }: Props) {
   const [rate, setRate] = useState(product?.rating?.rate ?? 0);
   const [count, setCount] = useState(product?.rating?.count ?? 0);
 
-  const handleSubmit = () => {
-    const payload = {
+  const handleSubmit = async () => {
+    const payload: PostProductRequest = {
       title,
       description,
       price,
@@ -41,7 +40,14 @@ export default function ProductFormModal({ trigger, product }: Props) {
       },
     };
 
-    console.log(payload);
+    try {
+      await createProduct(payload);
+      alert("Producto creado exitosamente");
+      setIsOpen(false); // Cerramos el modal después de crear el producto
+      onSuccess?.(); // Llamamos a onSuccess para refrescar la lista de productos
+    } catch {
+      alert("Error al crear el producto");
+    }
   };
 
   const inputStyle =
@@ -53,6 +59,8 @@ export default function ProductFormModal({ trigger, product }: Props) {
       title={product ? "Editar producto" : "Crear producto"}
       description="Completa la información del producto."
       size="md"
+      open={isOpen} // Controlamos la apertura del modal con el estado local
+      onOpenChange={setIsOpen} // Actualizamos el estado local cuando el modal se abra o cierre
       footer={
         <div className="flex gap-3 justify-end">
           <DialogPrimitive.Close asChild>
@@ -63,14 +71,20 @@ export default function ProductFormModal({ trigger, product }: Props) {
 
           <button
             onClick={handleSubmit}
+            disabled={loading}
             className="px-5 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium shadow-sm"
           >
-            Guardar
+            {loading ? "Guardando..." : "Guardar"}
           </button>
         </div>
       }
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        {error && (
+          <p className="text-red-500 col-span-1 md:col-span-2 text-sm">
+            {error}
+          </p>
+        )}
         {/* TITLE */}
         <div className="col-span-1 md:col-span-2">
           <label className="text-sm font-medium text-gray-700">Título</label>

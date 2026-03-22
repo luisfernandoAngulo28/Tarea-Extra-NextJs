@@ -9,7 +9,7 @@ import DeleteProductModal from "./components/DeleteProductModal";
 import CategoryFilter from "./components/CategoryFilter";
 
 function ProductPage() {
-  const { products, loading, error } = UseGetProduct();
+  const { products, loading, error, refetch } = UseGetProduct();
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const categories = [
@@ -32,6 +32,7 @@ function ProductPage() {
             Agregar Producto
           </button>
         }
+        onSuccess={refetch} // Refrescamos la lista de productos después de agregar uno nuevo
       />
 
       <CategoryFilter
@@ -64,6 +65,7 @@ function ProductPage() {
                         <Pencil size={16} />
                       </button>
                     }
+                    onSuccess={refetch} // Refrescamos la lista de productos después de editar uno
                   />
 
                   <DeleteProductModal
@@ -74,6 +76,7 @@ function ProductPage() {
                         <Trash2 size={16} />
                       </button>
                     }
+                    onSuccess={refetch} // Refrescamos la lista de productos después de eliminar uno
                   />
                 </>
               }
