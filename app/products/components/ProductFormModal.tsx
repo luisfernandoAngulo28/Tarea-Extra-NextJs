@@ -5,6 +5,8 @@ import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { PostProductRequest } from "../interfaces/postproduct.interface";
 import { usePostProduct } from "../hooks/usePostProduct";
+import { safeParse } from "valibot";
+import { productSchema } from "../../../validations/product.schema";
 
 type Props = {
   trigger: React.ReactNode;
@@ -26,6 +28,7 @@ export default function ProductFormModal({
   const [image, setImage] = useState(product?.image ?? "");
   const [rate, setRate] = useState(product?.rating?.rate ?? 0);
   const [count, setCount] = useState(product?.rating?.count ?? 0);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async () => {
     const payload: PostProductRequest = {
@@ -39,6 +42,23 @@ export default function ProductFormModal({
         count,
       },
     };
+
+    const result = safeParse(productSchema, payload);
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+
+      result.issues.forEach((issue) => {
+        const field = issue.path?.[0]?.key;
+        if (typeof field === "string" && field.length > 0) {
+          fieldErrors[field] = issue.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
 
     try {
       await createProduct(payload);
@@ -94,6 +114,9 @@ export default function ProductFormModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          {errors.title && (
+            <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+          )}
         </div>
 
         {/* DESCRIPTION */}
@@ -108,6 +131,9 @@ export default function ProductFormModal({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+          {errors.description && (
+            <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+          )}
         </div>
 
         {/* PRICE */}
@@ -120,6 +146,9 @@ export default function ProductFormModal({
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
           />
+          {errors.price && (
+            <p className="text-red-500 text-xs mt-1">{errors.price}</p>
+          )}
         </div>
 
         {/* CATEGORY */}
@@ -131,6 +160,9 @@ export default function ProductFormModal({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           />
+          {errors.category && (
+            <p className="text-red-500 text-xs mt-1">{errors.category}</p>
+          )}
         </div>
 
         {/* IMAGE */}
@@ -144,6 +176,9 @@ export default function ProductFormModal({
             value={image}
             onChange={(e) => setImage(e.target.value)}
           />
+          {errors.image && (
+            <p className="text-red-500 text-xs mt-1">{errors.image}</p>
+          )}
         </div>
 
         {/* RATING */}
@@ -159,6 +194,9 @@ export default function ProductFormModal({
             value={rate}
             onChange={(e) => setRate(Number(e.target.value))}
           />
+          {errors.rate && (
+            <p className="text-red-500 text-xs mt-1">{errors.rate}</p>
+          )}
         </div>
 
         <div>
@@ -172,6 +210,9 @@ export default function ProductFormModal({
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
           />
+          {errors.count && (
+            <p className="text-red-500 text-xs mt-1">{errors.count}</p>
+          )}
         </div>
       </div>
     </Dialog>
