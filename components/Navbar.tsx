@@ -11,13 +11,22 @@ export default function NavBar() {
           </Link>
         </div>
         <div className="flex item-center gap-6 text-gray-600 font-medium">
-          <Link href="/" className="hover:text-blue-600 transition">
+          <Link
+            href="/"
+            className="rounded-md px-2 py-1 transition hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          >
             Inicio
           </Link>
-          <Link href="/products" className="hover:text-blue-600 transition">
+          <Link
+            href="/products"
+            className="rounded-md px-2 py-1 transition hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          >
             Productos
           </Link>
-          <Link href="/about" className="hover:text-blue-600 transition">
+          <Link
+            href="/about"
+            className="rounded-md px-2 py-1 transition hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          >
             Acerca de
           </Link>
         </div>

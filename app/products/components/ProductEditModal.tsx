@@ -5,27 +5,25 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-import { usePostProduct } from "../hooks/usePostProduct";
 import { useProductForm } from "../hooks/useProductForm";
-import {
-  PostProductRequest,
-  PostProductResponse,
-} from "../interfaces/postproduct.interface";
+import { useUpdateProduct } from "../hooks/useUpdateProduct";
+import { GetProductResponse } from "../interfaces/getproduct.interface";
+import { UpdateProductRequest } from "../interfaces/postproduct.interface";
 
 type Props = {
   trigger: React.ReactNode;
-  product?: PostProductRequest;
+  product: GetProductResponse;
   onSuccess?: () => void;
-  onCreated?: (product: PostProductResponse) => void;
+  onUpdated?: (product: GetProductResponse) => void;
 };
 
-export default function ProductFormModal({
+export default function ProductEditModal({
   trigger,
   product,
   onSuccess,
-  onCreated,
+  onUpdated,
 }: Props) {
-  const { createProduct, loading, error } = usePostProduct();
+  const { editProduct, loading, error } = useUpdateProduct();
   const [isOpen, setIsOpen] = useState(false);
   const formId = useId();
 
@@ -44,18 +42,66 @@ export default function ProductFormModal({
       return;
     }
 
+    const patchPayload: UpdateProductRequest = {};
+
+    if (payload.title !== product.title) {
+      patchPayload.title = payload.title;
+    }
+    if (payload.description !== product.description) {
+      patchPayload.description = payload.description;
+    }
+    if (payload.price !== product.price) {
+      patchPayload.price = payload.price;
+    }
+    if (payload.category !== product.category) {
+      patchPayload.category = payload.category;
+    }
+    if (payload.image !== product.image) {
+      patchPayload.image = payload.image;
+    }
+
+    const ratingChanged =
+      payload.rating.rate !== product.rating.rate ||
+      payload.rating.count !== product.rating.count;
+
+    if (ratingChanged) {
+      patchPayload.rating = {};
+
+      if (payload.rating.rate !== product.rating.rate) {
+        patchPayload.rating.rate = payload.rating.rate;
+      }
+      if (payload.rating.count !== product.rating.count) {
+        patchPayload.rating.count = payload.rating.count;
+      }
+    }
+
+    if (Object.keys(patchPayload).length === 0) {
+      toast.info("No hay cambios para actualizar");
+      return;
+    }
+
     try {
-      const createPromise = createProduct(payload);
-      toast.promise(createPromise, {
-        loading: "Creando producto...",
-        success: "Producto creado exitosamente",
-        error: "Error al crear el producto",
+      const updatePromise = editProduct(product.id, patchPayload);
+      toast.promise(updatePromise, {
+        loading: "Actualizando producto...",
+        success: "Producto actualizado exitosamente",
+        error: "Error al actualizar el producto",
       });
 
-      const createdProduct = await createPromise;
-      onCreated?.(createdProduct);
+      await updatePromise;
+
+      const updatedProduct: GetProductResponse = {
+        ...product,
+        ...patchPayload,
+        category: (patchPayload.category ?? product.category) as GetProductResponse["category"],
+        rating: {
+          rate: patchPayload.rating?.rate ?? product.rating.rate,
+          count: patchPayload.rating?.count ?? product.rating.count,
+        },
+      };
+
+      onUpdated?.(updatedProduct);
       setIsOpen(false);
-      resetForm();
       onSuccess?.();
     } catch {
       // El toast de error ya es manejado por toast.promise.
@@ -73,8 +119,8 @@ export default function ProductFormModal({
   return (
     <Dialog
       trigger={trigger}
-      title="Crear producto"
-      description="Publica un producto en segundos con informacion clara y una imagen atractiva."
+      title="Editar producto"
+      description="Actualiza la ficha comercial del producto sin perder calidad de datos."
       size="lg"
       open={isOpen}
       onOpenChange={(open) => {
@@ -96,17 +142,13 @@ export default function ProductFormModal({
             disabled={loading || !isFormValid}
             className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Guardando..." : "Guardar"}
+            {loading ? "Guardando..." : "Actualizar"}
           </button>
         </div>
       }
     >
-      <div className="mb-4 rounded-xl border border-blue-100 bg-blue-50 p-3 text-sm text-blue-700">
-        Campos con * son obligatorios. Usa una URL valida para previsualizar la imagen.
-      </div>
-
       {!isFormValid && (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 md:col-span-2">
           Completa los campos obligatorios. Tip: en precio y rating puedes usar punto o coma decimal (ej: 2.1 o 2,1).
         </div>
       )}

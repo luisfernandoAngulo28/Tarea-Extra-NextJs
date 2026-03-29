@@ -2,7 +2,10 @@
 
 import Dialog from "@/components/Dialog";
 import { useDeleteProduct } from "../hooks/useDeleteProduct";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { usePostProduct } from "../hooks/usePostProduct";
+import { PostProductRequest } from "../interfaces/postproduct.interface";
 
 type Props = {
   trigger: React.ReactNode;
@@ -18,17 +21,70 @@ export default function DeleteProductModal({
   onSuccess,
 }: Props) {
   const { removeProduct, loading, error } = useDeleteProduct();
+  const { createProduct } = usePostProduct();
   const [isOpen, setIsOpen] = useState(false); // Control local del estado del modal
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleUndoDelete = async (deletedProduct: PostProductRequest) => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+
+    try {
+      const restorePromise = createProduct(deletedProduct);
+      toast.promise(restorePromise, {
+        loading: "Restaurando producto...",
+        success: "Producto restaurado",
+        error: "No se pudo restaurar el producto",
+      });
+
+      await restorePromise;
+      onSuccess?.();
+    } catch {
+      // El toast de error ya es manejado por toast.promise.
+    }
+  };
 
   const handleDelete = async () => {
     try {
-      await removeProduct(productId);
+      const deletePromise = removeProduct(productId);
+      toast.promise(deletePromise, {
+        loading: "Eliminando producto...",
+        success: "Producto eliminado",
+        error: "Error al eliminar el producto",
+      });
+
+      const deletedProduct = await deletePromise;
       setIsOpen(false); // Cerramos el modal después de eliminar
       onDelete(productId);
-      onSuccess?.(); // Llamamos a onSuccess para refrescar la lista de productos
-      alert("Producto eliminado exitosamente");
+
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+
+      refreshTimeoutRef.current = setTimeout(() => {
+        onSuccess?.();
+        refreshTimeoutRef.current = null;
+      }, 5000);
+
+      toast("Puedes deshacer esta accion", {
+        duration: 5000,
+        action: {
+          label: "Deshacer",
+          onClick: () =>
+            handleUndoDelete({
+              title: deletedProduct.title,
+              price: deletedProduct.price,
+              description: deletedProduct.description,
+              category: deletedProduct.category,
+              image: deletedProduct.image,
+              rating: deletedProduct.rating,
+            }),
+        },
+      });
     } catch {
-      alert("Error al eliminar el producto");
+      // El toast de error ya es manejado por toast.promise.
     }
   };
 
@@ -42,11 +98,16 @@ export default function DeleteProductModal({
       onOpenChange={setIsOpen} // Actualizamos el estado local cuando el modal se abra o cierre
       footer={
         <>
-          <button className="px-4 py-2 border rounded">Cancelar</button>
+          <button
+            onClick={() => setIsOpen(false)}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+          >
+            Cancelar
+          </button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className="px-4 py-2 bg-red-600 text-white rounded"
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Eliminando..." : "Eliminar"}
           </button>

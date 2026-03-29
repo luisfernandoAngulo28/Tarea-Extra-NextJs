@@ -1,16 +1,17 @@
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import CategoryBubble from "./CategoryBubble";
+import { Cpu, Gem, Shirt, ShoppingBag, type LucideIcon } from "lucide-react";
 
 type CategoriesSectionProps = {
   categories: string[];
   title?: string;
 };
 
-const categoryEmojiMap: Record<string, string> = {
-  electronics: "🔌",
-  jewelery: "💍",
-  "men's clothing": "👕",
-  "women's clothing": "👗",
+const categoryIconMap: Record<string, LucideIcon> = {
+  electronics: Cpu,
+  jewelery: Gem,
+  "men's clothing": Shirt,
+  "women's clothing": ShoppingBag,
 };
 
 function formatCategoryLabel(category: string) {
@@ -32,13 +33,17 @@ export default function CategoriesSection({
       <ScrollArea.Root className="relative w-full">
         <ScrollArea.Viewport className="w-full overflow-hidden rounded-md">
           <div className="flex w-max min-w-full gap-8 md:gap-12 justify-start md:justify-center pb-2">
-            {categories.map((category) => (
-              <CategoryBubble
-                key={category}
-                title={formatCategoryLabel(category)}
-                emoji={categoryEmojiMap[category] ?? "🛍️"}
-              />
-            ))}
+            {categories.map((category) => {
+              const CategoryIcon = categoryIconMap[category] ?? ShoppingBag;
+
+              return (
+                <CategoryBubble
+                  key={category}
+                  title={formatCategoryLabel(category)}
+                  icon={<CategoryIcon aria-hidden="true" strokeWidth={2} />}
+                />
+              );
+            })}
           </div>
         </ScrollArea.Viewport>
         <ScrollArea.Scrollbar

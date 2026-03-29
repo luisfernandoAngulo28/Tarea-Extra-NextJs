@@ -25,9 +25,9 @@ export default function CategoryFilter({
             type="button"
             onClick={() => onSelectCategory(category)}
             aria-pressed={isActive}
-            className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${
               isActive
-                ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105"
+                ? "scale-105 border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-200"
                 : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:text-blue-600 hover:shadow-md"
             }`}
           >

@@ -33,8 +33,9 @@ export default function ProductCard({
         <Image
           src={image}
           alt={title}
-          width={80}
-          height={80}
+          width={220}
+          height={220}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
           className="h-40 object-contain"
         />
       </div>
@@ -44,9 +45,9 @@ export default function ProductCard({
           {category}
         </span>
 
-        <h3 className="font-semibold text-lg line-clamp-2">{title}</h3>
+        <h3 className="font-semibold text-base leading-snug line-clamp-3 text-slate-900 min-h-[3.75rem]">{title}</h3>
 
-        <p className="text-gray-500 text-sm line-clamp-2 mt-1">{description}</p>
+        <p className="text-gray-500 text-sm line-clamp-2 mt-2">{description}</p>
 
         <div className="flex items-center justify-between mt-4">
           <span className="text-blue-600 font-bold text-lg">${price}</span>

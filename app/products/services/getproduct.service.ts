@@ -3,6 +3,8 @@ import {
   DeleteProductResponse,
   PostProductRequest,
   PostProductResponse,
+  UpdateProductRequest,
+  UpdateProductResponse,
 } from "../interfaces/postproduct.interface";
 
 export function getProducts() {
@@ -21,5 +23,15 @@ export function postProduct(
 export function deleteProduct(id: number): Promise<DeleteProductResponse> {
   return apiFetch(`/products/${id}`, {
     method: "DELETE",
+  });
+}
+
+export function updateProduct(
+  id: number,
+  data: UpdateProductRequest,
+): Promise<UpdateProductResponse> {
+  return apiFetch(`/products/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }
