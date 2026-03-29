@@ -2,6 +2,10 @@
 
 Aplicacion e-commerce construida con Next.js, TypeScript y Tailwind CSS usando Fake Store API.
 
+## Demo desplegada
+
+https://tarea-extra-next-dr5dx4cts-fernandofa671-2152s-projects.vercel.app/
+
 ## Stack
 
 - Next.js 16 (App Router)
